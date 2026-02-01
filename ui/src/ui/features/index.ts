@@ -11,7 +11,7 @@
  * 4. Set enabled: true when ready for dev testing
  */
 import "./tasks.js";
+import "./grove-viewer.js";
 
 // Future features:
-// import "./grove.js";
 // import "./dashboard.js";
