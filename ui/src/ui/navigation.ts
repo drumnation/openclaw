@@ -1,7 +1,9 @@
 import { t } from "../i18n/index.ts";
 import type { IconName } from "./icons.js";
+import { featureRegistry } from "./feature-registry.js";
 
-export const TAB_GROUPS = [
+/** Core tabs — always present, never flagged */
+const CORE_TAB_GROUPS = [
   { label: "chat", tabs: ["chat"] },
   {
     label: "control",
@@ -11,8 +13,24 @@ export const TAB_GROUPS = [
   { label: "settings", tabs: ["config", "debug", "logs"] },
 ] as const;
 
-export type Tab =
-  | "agents"
+/**
+ * TAB_GROUPS merges core tabs with enabled feature registry tabs.
+ * Feature groups are inserted before Settings.
+ * When no features are enabled, this is identical to the original static array.
+ */
+export function getTabGroups(): readonly { label: string; tabs: readonly string[] }[] {
+  const featureGroups = featureRegistry.getFeatureTabGroups();
+  if (featureGroups.length === 0) { return CORE_TAB_GROUPS; }
+  // Insert feature groups before Settings (last core group)
+  const core = [...CORE_TAB_GROUPS];
+  const settings = core.pop()!;
+  return [...core, ...featureGroups, settings];
+}
+
+/** Backwards-compatible static reference — used by existing code and tests */
+export const TAB_GROUPS = CORE_TAB_GROUPS;
+
+export type CoreTab =
   | "overview"
   | "channels"
   | "instances"
@@ -26,8 +44,10 @@ export type Tab =
   | "debug"
   | "logs";
 
-const TAB_PATHS: Record<Tab, string> = {
-  agents: "/agents",
+/** Tab type includes core tabs + string escape hatch for feature registry tabs */
+export type Tab = CoreTab | (string & {});
+
+const TAB_PATHS: Record<CoreTab, string> = {
   overview: "/overview",
   channels: "/channels",
   instances: "/instances",
@@ -42,7 +62,18 @@ const TAB_PATHS: Record<Tab, string> = {
   logs: "/logs",
 };
 
-const PATH_TO_TAB = new Map(Object.entries(TAB_PATHS).map(([tab, path]) => [path, tab as Tab]));
+const CORE_PATH_TO_TAB = new Map(Object.entries(TAB_PATHS).map(([tab, path]) => [path, tab as Tab]));
+
+/** Resolve path to tab, checking core tabs first, then feature registry */
+function resolvePathToTab(path: string): Tab | null {
+  const core = CORE_PATH_TO_TAB.get(path);
+  if (core) { return core; }
+  // Check feature registry
+  for (const feature of featureRegistry.getEnabledFeatures()) {
+    if (feature.tab.path === path) { return feature.id as Tab; }
+  }
+  return null;
+}
 
 export function normalizeBasePath(basePath: string): string {
   if (!basePath) {
@@ -77,8 +108,12 @@ export function normalizePath(path: string): string {
 
 export function pathForTab(tab: Tab, basePath = ""): string {
   const base = normalizeBasePath(basePath);
-  const path = TAB_PATHS[tab];
-  return base ? `${base}${path}` : path;
+  const corePath = TAB_PATHS[tab as CoreTab];
+  if (corePath) { return base ? `${base}${corePath}` : corePath; }
+  // Check feature registry
+  const feature = featureRegistry.getFeature(tab);
+  const featurePath = feature?.tab.path ?? `/${tab}`;
+  return base ? `${base}${featurePath}` : featurePath;
 }
 
 export function tabFromPath(pathname: string, basePath = ""): Tab | null {
@@ -92,13 +127,9 @@ export function tabFromPath(pathname: string, basePath = ""): Tab | null {
     }
   }
   let normalized = normalizePath(path).toLowerCase();
-  if (normalized.endsWith("/index.html")) {
-    normalized = "/";
-  }
-  if (normalized === "/") {
-    return "chat";
-  }
-  return PATH_TO_TAB.get(normalized) ?? null;
+  if (normalized.endsWith("/index.html")) normalized = "/";
+  if (normalized === "/") return "chat";
+  return resolvePathToTab(normalized);
 }
 
 export function inferBasePathFromPathname(pathname: string): string {
@@ -115,7 +146,7 @@ export function inferBasePathFromPathname(pathname: string): string {
   }
   for (let i = 0; i < segments.length; i++) {
     const candidate = `/${segments.slice(i).join("/")}`.toLowerCase();
-    if (PATH_TO_TAB.has(candidate)) {
+    if (resolvePathToTab(candidate) !== null) {
       const prefix = segments.slice(0, i);
       return prefix.length ? `/${prefix.join("/")}` : "";
     }
@@ -151,15 +182,22 @@ export function iconForTab(tab: Tab): IconName {
       return "bug";
     case "logs":
       return "scrollText";
-    default:
-      return "folder";
+    default: {
+      const feature = featureRegistry.getFeature(tab);
+      return feature?.tab.icon ?? "folder";
+    }
   }
 }
 
 export function titleForTab(tab: Tab) {
+  // Check feature registry first for non-core tabs
+  const feature = featureRegistry.getFeature(tab);
+  if (feature) return feature.tab.title;
   return t(`tabs.${tab}`);
 }
 
 export function subtitleForTab(tab: Tab) {
+  const feature = featureRegistry.getFeature(tab);
+  if (feature) return feature.tab.subtitle ?? "";
   return t(`subtitles.${tab}`);
 }
