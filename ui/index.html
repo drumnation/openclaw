@@ -10,6 +10,28 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   </head>
   <body>
+    <script>
+      // Eagerly apply theme to prevent FOUC (flash of unstyled content).
+      // Reads the persisted setting synchronously before the app module loads
+      // so the correct data-theme and color-scheme are present on first paint.
+      (function () {
+        try {
+          var raw = localStorage.getItem("openclaw.control.settings.v1");
+          var mode = raw ? JSON.parse(raw).theme : null;
+          if (mode !== "light" && mode !== "dark") mode = "system";
+          var resolved =
+            mode === "system"
+              ? window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light"
+              : mode;
+          document.documentElement.dataset.theme = resolved;
+          document.documentElement.style.colorScheme = resolved;
+        } catch (e) {
+          // Fallback: leave defaults (dark) in place
+        }
+      })();
+    </script>
     <openclaw-app></openclaw-app>
     <script type="module" src="/src/main.ts"></script>
   </body>

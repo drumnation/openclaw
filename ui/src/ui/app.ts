@@ -61,7 +61,7 @@ import type { SkillMessage } from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
 import { loadSettings, type UiSettings } from "./storage.ts";
-import type { ResolvedTheme, ThemeMode } from "./theme.ts";
+import { resolveTheme, type ResolvedTheme, type ThemeMode } from "./theme.ts";
 import type {
   AgentsListResult,
   AgentsFilesListResult,
@@ -122,7 +122,7 @@ export class OpenClawApp extends LitElement {
   @state() onboarding = resolveOnboardingMode();
   @state() connected = false;
   @state() theme: ThemeMode = this.settings.theme ?? "system";
-  @state() themeResolved: ResolvedTheme = "dark";
+  @state() themeResolved: ResolvedTheme = resolveTheme(this.settings.theme ?? "system");
   @state() hello: GatewayHelloOk | null = null;
   @state() lastError: string | null = null;
   @state() lastErrorCode: string | null = null;
