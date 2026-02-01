@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import { featureRegistry } from "./feature-registry.js";
 import { parseAgentSessionKey } from "../../../src/routing/session-key.js";
 import { t } from "../i18n/index.ts";
 import { refreshChatAvatar } from "./app-chat.ts";
@@ -63,7 +64,7 @@ import {
   updateSkillEnabled,
 } from "./controllers/skills.ts";
 import { icons } from "./icons.ts";
-import { normalizeBasePath, TAB_GROUPS, subtitleForTab, titleForTab } from "./navigation.ts";
+import { normalizeBasePath, TAB_GROUPS, getTabGroups, subtitleForTab, titleForTab } from "./navigation.ts";
 import { renderAgents } from "./views/agents.ts";
 import { renderChannels } from "./views/channels.ts";
 import { renderChat } from "./views/chat.ts";
@@ -240,7 +241,7 @@ export function renderApp(state: AppViewState) {
         </div>
       </header>
       <aside class="nav ${state.settings.navCollapsed ? "nav--collapsed" : ""}">
-        ${TAB_GROUPS.map((group) => {
+        ${getTabGroups().map((group) => {
           const isGroupCollapsed = state.settings.navGroupsCollapsed[group.label] ?? false;
           const hasActiveTab = group.tabs.some((tab) => tab === state.tab);
           return html`
@@ -1103,6 +1104,19 @@ export function renderApp(state: AppViewState) {
               })
             : nothing
         }
+
+        ${/* Feature registry catch-all: renders any registered feature tab */ ""}
+        ${(() => {
+          const featureResult = featureRegistry.safeRender(state.tab, state);
+          if (featureResult !== null) { return featureResult; }
+          if (featureRegistry.getFeature(state.tab)) {
+            return html`<div class="page-section" style="padding: 2rem; color: var(--color-error, #e53e3e);">
+              <h3>⚠️ Feature Error</h3>
+              <p>The "${state.tab}" feature failed to render. Check console for details.</p>
+            </div>`;
+          }
+          return nothing;
+        })()}
       </main>
       ${renderExecApprovalPrompt(state)}
       ${renderGatewayUrlConfirmation(state)}
