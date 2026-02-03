@@ -4,19 +4,71 @@ const INSTANCES = {
   day: {
     url: 'https://day.singularity-labs.org',
     name: 'Brother Day',
-    host: 'Linux Laptop'
+    host: 'Linux Laptop',
+    specs: { cores: 8, ramGB: 32 }
   },
   dusk: {
     url: 'https://dusk.singularity-labs.org', 
     name: 'Brother Dusk',
-    host: 'Beelink'
+    host: 'Beelink',
+    specs: { cores: 4, ramGB: 16 }
   },
   dawn: {
     url: 'https://dawn.singularity-labs.org',
     name: 'Brother Dawn', 
-    host: 'Gaming PC'
+    host: 'Gaming PC',
+    specs: { cores: 16, ramGB: 64 }
   }
 };
+
+// System metrics state
+const metrics = {
+  day: { cpu: 0, ramUsed: 0, ramTotal: 32 },
+  dusk: { cpu: 0, ramUsed: 0, ramTotal: 16 },
+  dawn: { cpu: 0, ramUsed: 0, ramTotal: 64 }
+};
+
+// Update metrics display
+function updateMetricsUI(instance) {
+  const container = document.getElementById(`metrics-${instance}`);
+  if (!container) return;
+  
+  const m = metrics[instance];
+  const cpuFill = container.querySelector('.cpu-fill');
+  const cpuValue = container.querySelector('.cpu-value');
+  const ramFill = container.querySelector('.ram-fill');
+  const ramValue = container.querySelector('.ram-value');
+  
+  if (cpuFill && cpuValue) {
+    cpuFill.style.width = `${m.cpu}%`;
+    cpuValue.textContent = `${m.cpu}%`;
+  }
+  
+  if (ramFill && ramValue) {
+    const ramPercent = (m.ramUsed / m.ramTotal) * 100;
+    ramFill.style.width = `${ramPercent}%`;
+    ramValue.textContent = `${m.ramUsed.toFixed(1)}GB`;
+  }
+}
+
+// Fetch metrics from an instance (placeholder - needs backend)
+async function fetchMetrics(instance) {
+  // TODO: Implement actual metrics fetching via API
+  // For now, simulate with random data for demo
+  metrics[instance] = {
+    cpu: Math.floor(Math.random() * 40) + 10,
+    ramUsed: (Math.random() * INSTANCES[instance].specs.ramGB * 0.6) + 2,
+    ramTotal: INSTANCES[instance].specs.ramGB
+  };
+  updateMetricsUI(instance);
+}
+
+// Fetch all metrics
+function fetchAllMetrics() {
+  Object.keys(INSTANCES).forEach(instance => {
+    fetchMetrics(instance);
+  });
+}
 
 // Check instance status
 async function checkStatus(instance) {
@@ -79,6 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
     checkStatus(instance);
   });
   
+  // Initial metrics fetch
+  fetchAllMetrics();
+  
   // Set up iframe load handlers
   Object.keys(INSTANCES).forEach(instance => {
     const frame = document.getElementById(`frame-${instance}`);
@@ -97,6 +152,9 @@ document.addEventListener('DOMContentLoaded', () => {
       checkStatus(instance);
     });
   }, 30000);
+  
+  // Periodic metrics update (every 10 seconds)
+  setInterval(fetchAllMetrics, 10000);
 });
 
 // Expose functions globally for onclick handlers

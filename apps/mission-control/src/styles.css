@@ -167,6 +167,56 @@ body {
   color: var(--text-secondary);
 }
 
+/* Metrics */
+.panel-metrics {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+  margin-right: 12px;
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.metric-label {
+  color: var(--text-secondary);
+  width: 28px;
+}
+
+.metric-bar {
+  width: 60px;
+  height: 6px;
+  background: var(--bg-primary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.metric-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease, background 0.3s ease;
+}
+
+.metric-fill.cpu-fill {
+  background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+  background-size: 200% 100%;
+}
+
+.metric-fill.ram-fill {
+  background: var(--panel-accent);
+}
+
+.metric-value {
+  color: var(--text-secondary);
+  min-width: 40px;
+  text-align: right;
+  font-family: 'SF Mono', 'Monaco', monospace;
+}
+
 .panel-actions {
   display: flex;
   gap: 4px;
