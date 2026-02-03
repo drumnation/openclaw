@@ -10,9 +10,11 @@ export default defineConfig({
   server: {
     port: 18800,
     host: true,
+    allowedHosts: ['gordon.singularity-labs.org', 'localhost', '127.0.0.1'],
   },
   preview: {
     port: 18800,
     host: true,
+    allowedHosts: ['gordon.singularity-labs.org', 'localhost', '127.0.0.1'],
   },
 });
