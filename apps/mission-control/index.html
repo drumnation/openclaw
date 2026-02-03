@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gordon Mission Control</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎛️</text></svg>">
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="header-left">
+        <h1>🎛️ Gordon Mission Control</h1>
+        <span class="subtitle">The Dynasty</span>
+      </div>
+      <div class="header-right">
+        <div class="status-indicators">
+          <div class="status-item" data-instance="day">
+            <span class="status-dot"></span>
+            <span class="status-label">Day</span>
+          </div>
+          <div class="status-item" data-instance="dusk">
+            <span class="status-dot"></span>
+            <span class="status-label">Dusk</span>
+          </div>
+          <div class="status-item" data-instance="dawn">
+            <span class="status-dot"></span>
+            <span class="status-label">Dawn</span>
+          </div>
+        </div>
+        <button class="refresh-btn" onclick="refreshAll()">↻ Refresh All</button>
+      </div>
+    </header>
+    
+    <main class="panels">
+      <section class="panel" data-instance="day">
+        <div class="panel-header">
+          <span class="panel-icon">☀️</span>
+          <div class="panel-info">
+            <h2>Brother Day</h2>
+            <span class="panel-host">Linux Laptop • Primary</span>
+          </div>
+          <div class="panel-actions">
+            <button onclick="openExternal('day')" title="Open in new tab">↗</button>
+            <button onclick="refreshPanel('day')" title="Refresh">↻</button>
+          </div>
+        </div>
+        <iframe 
+          id="frame-day" 
+          src="https://day.singularity-labs.org" 
+          loading="lazy"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+        ></iframe>
+      </section>
+      
+      <section class="panel" data-instance="dusk">
+        <div class="panel-header">
+          <span class="panel-icon">🌆</span>
+          <div class="panel-info">
+            <h2>Brother Dusk</h2>
+            <span class="panel-host">Beelink • Always-On</span>
+          </div>
+          <div class="panel-actions">
+            <button onclick="openExternal('dusk')" title="Open in new tab">↗</button>
+            <button onclick="refreshPanel('dusk')" title="Refresh">↻</button>
+          </div>
+        </div>
+        <iframe 
+          id="frame-dusk" 
+          src="https://dusk.singularity-labs.org" 
+          loading="lazy"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+        ></iframe>
+      </section>
+      
+      <section class="panel" data-instance="dawn">
+        <div class="panel-header">
+          <span class="panel-icon">🌅</span>
+          <div class="panel-info">
+            <h2>Brother Dawn</h2>
+            <span class="panel-host">Gaming PC • Experimental</span>
+          </div>
+          <div class="panel-actions">
+            <button onclick="openExternal('dawn')" title="Open in new tab">↗</button>
+            <button onclick="refreshPanel('dawn')" title="Refresh">↻</button>
+          </div>
+        </div>
+        <iframe 
+          id="frame-dawn" 
+          src="https://dawn.singularity-labs.org" 
+          loading="lazy"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+        ></iframe>
+      </section>
+    </main>
+  </div>
+  
+  <script src="/src/main.js" type="module"></script>
+</body>
+</html>

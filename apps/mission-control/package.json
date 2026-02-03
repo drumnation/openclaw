@@ -1,0 +1,16 @@
+{
+  "name": "@openclaw/mission-control",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Multi-agent command deck for viewing Gordon instances (Day/Dusk/Dawn)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview --port 18800 --host"
+  },
+  "devDependencies": {
+    "vite": "^6.4.1"
+  }
+}
