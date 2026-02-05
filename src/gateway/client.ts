@@ -425,6 +425,11 @@ export class GatewayClient {
       clearInterval(this.tickTimer);
       this.tickTimer = null;
     }
+    // Reset lastSeq on reconnect to avoid spurious gap detection.
+    // After reconnect, the server's seq counter continues from where it was,
+    // but the client may have missed events during the disconnection period.
+    // Treating any gap after reconnect as normal prevents false "event gap" warnings.
+    this.lastSeq = null;
     const delay = this.backoffMs;
     this.backoffMs = Math.min(this.backoffMs * 2, 30_000);
     setTimeout(() => this.start(), delay).unref();
