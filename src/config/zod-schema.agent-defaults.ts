@@ -159,6 +159,7 @@ export const AgentDefaultsSchema = z
         model: AgentModelSchema.optional(),
         thinking: z.string().optional(),
         announceTimeoutMs: z.number().int().positive().optional(),
+        bootstrapFiles: z.array(z.string()).optional(),
       })
       .strict()
       .optional(),
