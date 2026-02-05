@@ -21,6 +21,17 @@ const SessionResetConfigSchema = z
   })
   .strict();
 
+const IdleWatcherConfigSchema = z
+  .object({
+    /** Whether idle detection is enabled */
+    enabled: z.boolean().optional(),
+    /** Interval between idle checks in milliseconds (default: 60000 = 1 min) */
+    checkIntervalMs: z.number().int().positive().optional(),
+    /** Time in milliseconds before a session is considered idle (default: 300000 = 5 min) */
+    idleThresholdMs: z.number().int().positive().optional(),
+  })
+  .strict();
+
 export const SessionSendPolicySchema = createAllowDenyChannelRulesSchema();
 
 export const SessionSchema = z
@@ -102,6 +113,8 @@ export const SessionSchema = z
         }
       })
       .optional(),
+    /** Configuration for idle session detection and lifecycle hooks */
+    idleWatcher: IdleWatcherConfigSchema.optional(),
   })
   .strict()
   .optional();
