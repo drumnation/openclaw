@@ -1,5 +1,4 @@
 import { html, nothing } from "lit";
-import { featureRegistry } from "./feature-registry.js";
 import { parseAgentSessionKey } from "../../../src/routing/session-key.js";
 import { t } from "../i18n/index.ts";
 import { refreshChatAvatar } from "./app-chat.ts";
@@ -63,8 +62,9 @@ import {
   updateSkillEdit,
   updateSkillEnabled,
 } from "./controllers/skills.ts";
+import { featureRegistry } from "./feature-registry.js";
 import { icons } from "./icons.ts";
-import { normalizeBasePath, TAB_GROUPS, getTabGroups, subtitleForTab, titleForTab } from "./navigation.ts";
+import { normalizeBasePath, getTabGroups, subtitleForTab, titleForTab } from "./navigation.ts";
 import { renderAgents } from "./views/agents.ts";
 import { renderChannels } from "./views/channels.ts";
 import { renderChat } from "./views/chat.ts";
@@ -1017,6 +1017,22 @@ export function renderApp(state: AppViewState) {
                 onSplitRatioChange: (ratio: number) => state.handleSplitRatioChange(ratio),
                 assistantName: state.assistantName,
                 assistantAvatar: state.assistantAvatar,
+                // File sidebar props for markdown path clicking
+                sidebarMode: state.sidebarMode,
+                sidebarFilePath: state.sidebarFilePath,
+                sidebarFileLoading: state.sidebarFileLoading,
+                sidebarFileSaving: state.sidebarFileSaving,
+                sidebarFileEditing: state.sidebarFileEditing,
+                sidebarFileDirty: state.sidebarFileDirty,
+                onOpenFileSidebar: (path: string) => state.handleOpenFileSidebar(path),
+                onFileSidebarEdit: () => state.handleFileSidebarEdit(),
+                onFileSidebarSave: (content: string) => state.handleFileSidebarSave(content),
+                onFileSidebarCancel: () => state.handleFileSidebarCancel(),
+                onFileSidebarContentChange: (content: string) =>
+                  state.handleFileSidebarContentChange(content),
+                // Context chips
+                fileContextChips: state.fileContextChips,
+                onRemoveFileContextChip: (path: string) => state.handleRemoveFileContextChip(path),
               })
             : nothing
         }
@@ -1108,7 +1124,9 @@ export function renderApp(state: AppViewState) {
         ${/* Feature registry catch-all: renders any registered feature tab */ ""}
         ${(() => {
           const featureResult = featureRegistry.safeRender(state.tab, state);
-          if (featureResult !== null) { return featureResult; }
+          if (featureResult !== null) {
+            return featureResult;
+          }
           if (featureRegistry.getFeature(state.tab)) {
             return html`<div class="page-section" style="padding: 2rem; color: var(--color-error, #e53e3e);">
               <h3>⚠️ Feature Error</h3>

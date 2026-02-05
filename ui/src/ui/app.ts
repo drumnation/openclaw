@@ -151,11 +151,21 @@ export class OpenClawApp extends LitElement {
   @state() chatQueue: ChatQueueItem[] = [];
   @state() chatAttachments: ChatAttachment[] = [];
   @state() chatManualRefreshInFlight = false;
-  // Sidebar state for tool output viewing
+  // Sidebar state for tool output viewing and file editing
   @state() sidebarOpen = false;
   @state() sidebarContent: string | null = null;
   @state() sidebarError: string | null = null;
   @state() splitRatio = this.settings.splitRatio;
+  // Markdown file sidebar state
+  @state() sidebarMode: "tool" | "file" = "tool";
+  @state() sidebarFilePath: string | null = null;
+  @state() sidebarFileLoading = false;
+  @state() sidebarFileSaving = false;
+  @state() sidebarFileEditing = false;
+  @state() sidebarFileOriginal: string | null = null;
+  @state() sidebarFileDirty = false;
+  // Context chips for files in context
+  @state() fileContextChips: Array<{ path: string; filename: string }> = [];
 
   @state() nodesLoading = false;
   @state() nodes: Array<Record<string, unknown>> = [];
@@ -579,6 +589,10 @@ export class OpenClawApp extends LitElement {
       window.clearTimeout(this.sidebarCloseTimer);
       this.sidebarCloseTimer = null;
     }
+    this.sidebarMode = "tool";
+    this.sidebarFilePath = null;
+    this.sidebarFileEditing = false;
+    this.sidebarFileDirty = false;
     this.sidebarContent = content;
     this.sidebarError = null;
     this.sidebarOpen = true;
@@ -596,6 +610,10 @@ export class OpenClawApp extends LitElement {
       }
       this.sidebarContent = null;
       this.sidebarError = null;
+      this.sidebarFilePath = null;
+      this.sidebarFileEditing = false;
+      this.sidebarFileDirty = false;
+      this.sidebarFileOriginal = null;
       this.sidebarCloseTimer = null;
     }, 200);
   }
@@ -604,6 +622,97 @@ export class OpenClawApp extends LitElement {
     const newRatio = Math.max(0.4, Math.min(0.7, ratio));
     this.splitRatio = newRatio;
     this.applySettings({ ...this.settings, splitRatio: newRatio });
+  }
+
+  // Markdown file sidebar handlers
+  async handleOpenFileSidebar(path: string) {
+    if (!this.client) {
+      return;
+    }
+
+    // Import the helper functions
+    const { fetchMarkdownFile, getFilename } = await import("./features/markdown-paths.js");
+
+    // Cancel any pending close timer
+    if (this.sidebarCloseTimer != null) {
+      window.clearTimeout(this.sidebarCloseTimer);
+      this.sidebarCloseTimer = null;
+    }
+
+    // Set up file sidebar mode
+    this.sidebarMode = "file";
+    this.sidebarFilePath = path;
+    this.sidebarFileLoading = true;
+    this.sidebarFileEditing = false;
+    this.sidebarFileDirty = false;
+    this.sidebarContent = null;
+    this.sidebarFileOriginal = null;
+    this.sidebarError = null;
+    this.sidebarOpen = true;
+
+    // Fetch the file content
+    const result = await fetchMarkdownFile(this.client, path);
+
+    this.sidebarFileLoading = false;
+    if (result.error) {
+      this.sidebarError = result.error;
+    } else {
+      this.sidebarContent = result.content;
+      this.sidebarFileOriginal = result.content;
+    }
+
+    // Add to context chips if not already there
+    const filename = getFilename(path);
+    if (!this.fileContextChips.some((c) => c.path === path)) {
+      this.fileContextChips = [...this.fileContextChips, { path, filename }];
+    }
+  }
+
+  handleFileSidebarEdit() {
+    this.sidebarFileEditing = true;
+    this.sidebarFileDirty = false;
+  }
+
+  handleFileSidebarCancel() {
+    this.sidebarFileEditing = false;
+    this.sidebarContent = this.sidebarFileOriginal;
+    this.sidebarFileDirty = false;
+  }
+
+  handleFileSidebarContentChange(content: string) {
+    this.sidebarContent = content;
+    this.sidebarFileDirty = content !== this.sidebarFileOriginal;
+  }
+
+  async handleFileSidebarSave(content: string) {
+    if (!this.client || !this.sidebarFilePath) {
+      return;
+    }
+
+    const { saveMarkdownFile } = await import("./features/markdown-paths.js");
+
+    this.sidebarFileSaving = true;
+    this.sidebarError = null;
+
+    const result = await saveMarkdownFile(this.client, this.sidebarFilePath, content);
+
+    this.sidebarFileSaving = false;
+
+    if (result.error) {
+      this.sidebarError = result.error;
+    } else {
+      this.sidebarFileOriginal = content;
+      this.sidebarFileDirty = false;
+      this.sidebarFileEditing = false;
+    }
+  }
+
+  handleRemoveFileContextChip(path: string) {
+    this.fileContextChips = this.fileContextChips.filter((c) => c.path !== path);
+    // If removing the currently open file, close the sidebar
+    if (this.sidebarMode === "file" && this.sidebarFilePath === path) {
+      this.handleCloseSidebar();
+    }
   }
 
   render() {

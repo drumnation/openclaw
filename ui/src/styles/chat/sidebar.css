@@ -115,3 +115,131 @@
     border-left: none;
   }
 }
+
+/* ─── Clickable Markdown Paths ───────────────────────────────────── */
+
+/* Clickable path links in messages */
+.md-path-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.9em;
+  padding: 0 2px;
+  border-radius: 2px;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.md-path-link:hover {
+  background-color: var(--accent-alpha);
+  text-decoration-style: solid;
+}
+
+/* File sidebar styles */
+.md-file-sidebar .sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.md-file-sidebar .sidebar-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.md-file-sidebar .sidebar-actions {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.md-file-dirty {
+  color: var(--warning);
+  margin-left: 0.25rem;
+}
+
+.md-file-loading {
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.md-file-editor {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  padding: 0.75rem;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  resize: vertical;
+}
+
+.md-file-editor:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Context chips */
+.md-context-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.md-context-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.md-context-chip:hover {
+  background: var(--panel-hover);
+  border-color: var(--accent);
+}
+
+.md-context-chip__icon {
+  font-size: 0.8em;
+}
+
+.md-context-chip__name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md-context-chip__remove {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0.15rem;
+  margin-left: 0.15rem;
+}
+
+.md-context-chip__remove:hover {
+  color: var(--danger);
+}

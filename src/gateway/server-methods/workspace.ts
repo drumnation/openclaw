@@ -1,18 +1,18 @@
 /**
- * Workspace file reader — exposes safe, read-only access to workspace files.
+ * Workspace file reader/writer — exposes safe access to workspace files.
  *
- * Currently supports reading specific known files (TASKS.md, MEMORY.md, etc.)
+ * Currently supports reading/writing specific known files (TASKS.md, MEMORY.md, etc.)
  * from the agent's workspace directory.
  *
- * Security: Only allows reading files that match an explicit allowlist.
- * No directory traversal, no writes, no arbitrary paths.
+ * Security: Only allows accessing files that match an explicit allowlist.
+ * No directory traversal beyond workspace, strict path validation.
  */
-import { readFile } from "node:fs/promises";
-import { join, resolve, normalize } from "node:path";
-import type { GatewayRequestHandlers } from "./types.js";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { join, resolve, normalize, dirname } from "node:path";
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agents/agent-scope.js";
 import { loadConfig } from "../../config/config.js";
 import { ErrorCodes, errorShape } from "../protocol/index.js";
+import type { GatewayRequestHandlers } from "./types.js";
 
 /**
  * Allowlisted file patterns that can be read via this API.
@@ -87,6 +87,51 @@ export const workspaceHandlers: GatewayRequestHandlers = {
         false,
         undefined,
         errorShape(ErrorCodes.UNAVAILABLE, `failed to read file: ${String(err)}`),
+      );
+    }
+  },
+
+  "workspace.write": async ({ params, respond }) => {
+    const filePath = params?.file;
+    const content = params?.content;
+    if (typeof filePath !== "string" || !filePath) {
+      respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "missing 'file' parameter"));
+      return;
+    }
+    if (typeof content !== "string") {
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INVALID_REQUEST, "missing 'content' parameter"),
+      );
+      return;
+    }
+    if (!isAllowed(filePath)) {
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INVALID_REQUEST, `file not in allowlist: ${filePath}`),
+      );
+      return;
+    }
+    try {
+      const cfg = loadConfig();
+      const workspaceDir = resolveAgentWorkspaceDir(cfg, resolveDefaultAgentId(cfg));
+      const fullPath = resolve(join(workspaceDir, filePath));
+      // Double-check the resolved path is inside workspace (defense in depth)
+      if (!fullPath.startsWith(resolve(workspaceDir))) {
+        respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "path escapes workspace"));
+        return;
+      }
+      // Ensure parent directory exists
+      await mkdir(dirname(fullPath), { recursive: true });
+      await writeFile(fullPath, content, "utf-8");
+      respond(true, { file: filePath, written: true }, undefined);
+    } catch (err: unknown) {
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.UNAVAILABLE, `failed to write file: ${String(err)}`),
       );
     }
   },

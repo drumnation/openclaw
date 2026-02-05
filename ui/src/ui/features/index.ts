@@ -13,5 +13,8 @@
 import "./tasks.js";
 import "./grove-viewer.js";
 
+// Clickable markdown paths (not a tab feature, but exports utilities)
+export * from "./markdown-paths.js";
+
 // Future features:
 // import "./dashboard.js";

@@ -13,6 +13,7 @@ import type { SessionsListResult } from "../types.ts";
 import type { ChatItem, MessageGroup } from "../types/chat-types.ts";
 import type { ChatAttachment, ChatQueueItem } from "../ui-types.ts";
 import { renderMarkdownSidebar } from "./markdown-sidebar.ts";
+// import { renderMarkdownFileSidebar, renderContextChips, getFilename, type ContextChip } from "../features/markdown-paths.js";
 import "../components/resizable-divider.ts";
 
 export type CompactionIndicatorStatus = {
@@ -59,6 +60,13 @@ export type ChatProps = {
   sidebarOpen?: boolean;
   sidebarContent?: string | null;
   sidebarError?: string | null;
+  sidebarMode?: "tool" | "file";
+  sidebarFilePath?: string | null;
+  sidebarFileLoading?: boolean;
+  sidebarFileSaving?: boolean;
+  sidebarFileEditing?: boolean;
+  sidebarFileOriginal?: string | null;
+  sidebarFileDirty?: boolean;
   splitRatio?: number;
   assistantName: string;
   assistantAvatar: string | null;
@@ -78,6 +86,10 @@ export type ChatProps = {
   onNewSession: () => void;
   onOpenSidebar?: (content: string) => void;
   onCloseSidebar?: () => void;
+  onOpenFileSidebar?: (path: string) => void;
+  onSaveFile?: (path: string, content: string) => void;
+  onToggleFileEdit?: () => void;
+  onFileContentChange?: (content: string) => void;
   onSplitRatioChange?: (ratio: number) => void;
   onChatScroll?: (event: Event) => void;
 };
@@ -258,12 +270,21 @@ export function renderChat(props: ChatProps) {
 
   const splitRatio = props.splitRatio ?? 0.6;
   const sidebarOpen = Boolean(props.sidebarOpen && props.onCloseSidebar);
+  const _sidebarMode = props.sidebarMode ?? "tool";
   const thread = html`
     <div
       class="chat-thread"
       role="log"
       aria-live="polite"
       @scroll=${props.onChatScroll}
+      @click=${(e: Event) => {
+        const target = e.target as HTMLElement;
+        const pathEl = target.closest("[data-path]");
+        if (pathEl && props.onOpenFileSidebar) {
+          e.preventDefault();
+          props.onOpenFileSidebar(pathEl.dataset.path!);
+        }
+      }}
     >
       ${
         props.loading
@@ -354,17 +375,36 @@ export function renderChat(props: ChatProps) {
                 @resize=${(e: CustomEvent) => props.onSplitRatioChange?.(e.detail.splitRatio)}
               ></resizable-divider>
               <div class="chat-sidebar">
-                ${renderMarkdownSidebar({
-                  content: props.sidebarContent ?? null,
-                  error: props.sidebarError ?? null,
-                  onClose: props.onCloseSidebar!,
-                  onViewRawText: () => {
-                    if (!props.sidebarContent || !props.onOpenSidebar) {
-                      return;
-                    }
-                    props.onOpenSidebar(`\`\`\`\n${props.sidebarContent}\n\`\`\``);
-                  },
-                })}
+                ${
+                  sidebarMode === "file"
+                    ? renderMarkdownFileSidebar({
+                        state: {
+                          path: props.sidebarFilePath ?? null,
+                          content: props.sidebarContent ?? null,
+                          error: props.sidebarError ?? null,
+                          loading: props.sidebarFileLoading ?? false,
+                          saving: props.sidebarFileSaving ?? false,
+                          editing: props.sidebarFileEditing ?? false,
+                          original: props.sidebarFileOriginal ?? null,
+                          dirty: props.sidebarFileDirty ?? false,
+                        },
+                        onClose: props.onCloseSidebar!,
+                        onSave: props.onSaveFile,
+                        onToggleEdit: props.onToggleFileEdit,
+                        onContentChange: props.onFileContentChange,
+                      })
+                    : renderMarkdownSidebar({
+                        content: props.sidebarContent ?? null,
+                        error: props.sidebarError ?? null,
+                        onClose: props.onCloseSidebar!,
+                        onViewRawText: () => {
+                          if (!props.sidebarContent || !props.onOpenSidebar) {
+                            return;
+                          }
+                          props.onOpenSidebar(`\`\`\`\n${props.sidebarContent}\n\`\`\``);
+                        },
+                      })
+                }
               </div>
             `
             : nothing

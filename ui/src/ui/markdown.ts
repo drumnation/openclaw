@@ -1,5 +1,6 @@
 import DOMPurify from "dompurify";
 import { marked } from "marked";
+import { transformPathsToLinks, MD_PATH_REGEX } from "./features/markdown-paths.js";
 import { truncateText } from "./format.ts";
 
 marked.setOptions({
@@ -25,6 +26,7 @@ const allowedTags = [
   "ol",
   "p",
   "pre",
+  "span",
   "strong",
   "table",
   "tbody",
@@ -36,7 +38,17 @@ const allowedTags = [
   "img",
 ];
 
-const allowedAttrs = ["class", "href", "rel", "target", "title", "start", "src", "alt"];
+const allowedAttrs = [
+  "class",
+  "href",
+  "rel",
+  "target",
+  "title",
+  "start",
+  "src",
+  "alt",
+  "data-path",
+];
 const sanitizeOptions = {
   ALLOWED_TAGS: allowedTags,
   ALLOWED_ATTR: allowedAttrs,
@@ -90,14 +102,17 @@ function installHooks() {
   });
 }
 
-export function toSanitizedMarkdownHtml(markdown: string): string {
+export function toSanitizedMarkdownHtml(markdown: string, enablePathLinks = true): string {
   const input = markdown.trim();
   if (!input) {
     return "";
   }
   installHooks();
+
+  // Include enablePathLinks in cache key
+  const cacheKey = enablePathLinks ? `paths:${input}` : input;
   if (input.length <= MARKDOWN_CACHE_MAX_CHARS) {
-    const cached = getCachedMarkdown(input);
+    const cached = getCachedMarkdown(cacheKey);
     if (cached !== null) {
       return cached;
     }
@@ -111,16 +126,23 @@ export function toSanitizedMarkdownHtml(markdown: string): string {
     const html = `<pre class="code-block">${escaped}</pre>`;
     const sanitized = DOMPurify.sanitize(html, sanitizeOptions);
     if (input.length <= MARKDOWN_CACHE_MAX_CHARS) {
-      setCachedMarkdown(input, sanitized);
+      setCachedMarkdown(cacheKey, sanitized);
     }
     return sanitized;
   }
-  const rendered = marked.parse(`${truncated.text}${suffix}`, {
+
+  // Transform markdown paths to clickable links before parsing
+  const textToRender =
+    enablePathLinks && MD_PATH_REGEX.test(truncated.text)
+      ? transformPathsToLinks(`${truncated.text}${suffix}`)
+      : `${truncated.text}${suffix}`;
+
+  const rendered = marked.parse(textToRender, {
     renderer: htmlEscapeRenderer,
   }) as string;
   const sanitized = DOMPurify.sanitize(rendered, sanitizeOptions);
   if (input.length <= MARKDOWN_CACHE_MAX_CHARS) {
-    setCachedMarkdown(input, sanitized);
+    setCachedMarkdown(cacheKey, sanitized);
   }
   return sanitized;
 }
