@@ -343,11 +343,6 @@ export async function onTimer(state: CronServiceState) {
         job.state.lastError = undefined;
       }
       await persist(state);
-
-      return due.map((j) => ({
-        id: j.id,
-        job: j,
-      }));
     });
 
     const runDueJob = async (params: {
@@ -452,6 +447,7 @@ export async function onTimer(state: CronServiceState) {
     }
   } finally {
     state.running = false;
+    // Always re-arm so transient errors (e.g. ENOSPC) don't kill the scheduler.
     armTimer(state);
   }
 }
