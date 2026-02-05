@@ -32,6 +32,30 @@ const IdleWatcherConfigSchema = z
   })
   .strict();
 
+const TimeWindowSchema = z
+  .object({
+    /** Unique name for this window (e.g., "business_hours") */
+    name: z.string(),
+    /** Start hour in 24h format (0-23) */
+    startHour: z.number().int().min(0).max(23),
+    /** End hour in 24h format (0-23) */
+    endHour: z.number().int().min(0).max(23),
+    /** Days of week this window applies (0=Sun, 1=Mon, ..., 6=Sat) */
+    daysOfWeek: z.array(z.number().int().min(0).max(6)).optional(),
+  })
+  .strict();
+
+const TimeWindowConfigSchema = z
+  .object({
+    /** Whether time window watching is enabled */
+    enabled: z.boolean().optional(),
+    /** List of time windows to monitor */
+    windows: z.array(TimeWindowSchema).optional(),
+    /** Interval between checks in milliseconds (default: 60000 = 1 min) */
+    checkIntervalMs: z.number().int().positive().optional(),
+  })
+  .strict();
+
 export const SessionSendPolicySchema = createAllowDenyChannelRulesSchema();
 
 export const SessionSchema = z
@@ -115,6 +139,10 @@ export const SessionSchema = z
       .optional(),
     /** Configuration for idle session detection and lifecycle hooks */
     idleWatcher: IdleWatcherConfigSchema.optional(),
+    /** Configuration for time-based lifecycle hooks */
+    timeWindow: TimeWindowConfigSchema.optional(),
+    /** Configuration for time window detection and lifecycle hooks */
+    timeWindow: TimeWindowConfigSchema.optional(),
   })
   .strict()
   .optional();

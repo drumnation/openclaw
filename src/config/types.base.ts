@@ -84,6 +84,35 @@ export type SessionResetByTypeConfig = {
   thread?: SessionResetConfig;
 };
 
+export type IdleWatcherConfig = {
+  /** Whether idle detection is enabled */
+  enabled?: boolean;
+  /** Interval between idle checks in milliseconds (default: 60000 = 1 min) */
+  checkIntervalMs?: number;
+  /** Time in milliseconds before a session is considered idle (default: 300000 = 5 min) */
+  idleThresholdMs?: number;
+};
+
+export type TimeWindowEntry = {
+  /** Unique name for this window (e.g., "business_hours") */
+  name: string;
+  /** Start hour in 24h format (0-23) */
+  startHour: number;
+  /** End hour in 24h format (0-23) */
+  endHour: number;
+  /** Days of week (0=Sun to 6=Sat). If omitted, applies every day. */
+  daysOfWeek?: number[];
+};
+
+export type TimeWindowConfig = {
+  /** Whether time window hooks are enabled */
+  enabled?: boolean;
+  /** Check interval in milliseconds (default: 60000 = 1 min) */
+  checkIntervalMs?: number;
+  /** Named time windows */
+  windows?: TimeWindowEntry[];
+};
+
 export type SessionThreadBindingsConfig = {
   /**
    * Master switch for thread-bound session routing features.
@@ -122,6 +151,10 @@ export type SessionConfig = {
   threadBindings?: SessionThreadBindingsConfig;
   /** Automatic session store maintenance (pruning, capping, file rotation). */
   maintenance?: SessionMaintenanceConfig;
+  /** Configuration for idle session detection */
+  idleWatcher?: IdleWatcherConfig;
+  /** Configuration for time window lifecycle hooks */
+  timeWindow?: TimeWindowConfig;
 };
 
 export type SessionMaintenanceMode = "enforce" | "warn";

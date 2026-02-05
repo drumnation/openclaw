@@ -5,6 +5,8 @@ import { registerSkillsChangeListener } from "../agents/skills/refresh.js";
 import { initSubagentRegistry } from "../agents/subagent-registry.js";
 import { getTotalPendingReplies } from "../auto-reply/reply/dispatcher-registry.js";
 import type { CanvasHostServer } from "../canvas-host/server.js";
+import type { IdleWatcherState } from "../session/idle-watcher.js";
+import type { TimeWindowState } from "../session/time-window.js";
 import { type ChannelId, listChannelPlugins } from "../channels/plugins/index.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { createDefaultDeps } from "../cli/deps.js";
@@ -40,6 +42,16 @@ import {
 import { scheduleGatewayUpdateCheck } from "../infra/update-startup.js";
 import { startDiagnosticHeartbeat, stopDiagnosticHeartbeat } from "../logging/diagnostic.js";
 import { createSubsystemLogger, runtimeForLogger } from "../logging/subsystem.js";
+import {
+  resolveIdleWatcherConfig,
+  startIdleWatcher,
+  stopIdleWatcher,
+} from "../session/idle-watcher.js";
+import {
+  resolveTimeWindowConfig,
+  startTimeWindowWatcher,
+  stopTimeWindowWatcher,
+} from "../session/time-window.js";
 import { getGlobalHookRunner, runGlobalGatewayStopSafely } from "../plugins/hook-runner-global.js";
 import { createEmptyPluginRegistry } from "../plugins/registry.js";
 import type { PluginServicesHandle } from "../plugins/services.js";
@@ -89,6 +101,7 @@ import {
   refreshGatewayHealthSnapshot,
 } from "./server/health-state.js";
 import { loadGatewayTlsRuntime } from "./server/tls.js";
+import { loadCombinedSessionStoreForGateway } from "./session-utils.js";
 import { ensureGatewayStartupAuth } from "./startup-auth.js";
 
 export { __resetModelCatalogCacheForTest } from "./server-model-catalog.js";
@@ -528,6 +541,23 @@ export async function startGatewayServer(
       }
     : startHeartbeatRunner({ cfg: cfgAtStart });
 
+  // Start session lifecycle watchers
+  const idleWatcherConfig = resolveIdleWatcherConfig(cfgAtStart.session?.idleWatcher);
+  let idleWatcherState: IdleWatcherState | null = null;
+  if (idleWatcherConfig.enabled) {
+    const getSessions = () => {
+      const { store } = loadCombinedSessionStoreForGateway(loadConfig());
+      return new Map(Object.entries(store));
+    };
+    idleWatcherState = startIdleWatcher(idleWatcherConfig, getSessions);
+  }
+
+  const timeWindowConfig = resolveTimeWindowConfig(cfgAtStart.session?.timeWindow);
+  let timeWindowState: TimeWindowState | null = null;
+  if (timeWindowConfig.enabled) {
+    timeWindowState = startTimeWindowWatcher(timeWindowConfig);
+  }
+
   const healthCheckMinutes = cfgAtStart.gateway?.channelHealthCheckMinutes;
   const healthCheckDisabled = healthCheckMinutes === 0;
   const channelHealthMonitor = healthCheckDisabled
@@ -774,6 +804,13 @@ export async function startGatewayServer(
         skillsRefreshTimer = null;
       }
       skillsChangeUnsub();
+      // Stop session lifecycle watchers
+      if (idleWatcherState) {
+        stopIdleWatcher(idleWatcherState);
+      }
+      if (timeWindowState) {
+        stopTimeWindowWatcher(timeWindowState);
+      }
       authRateLimiter?.dispose();
       channelHealthMonitor?.stop();
       await close(opts);
