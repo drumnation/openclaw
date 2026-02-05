@@ -10,6 +10,7 @@ import {
   cleanupArchivedSessionTranscripts,
 } from "../../gateway/session-utils.fs.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
+import { updateSessionActivity } from "../../session/activity.js";
 import {
   deliveryContextFromSession,
   mergeDeliveryContext,
@@ -848,6 +849,8 @@ export async function recordSessionMetaFromInbound(params: {
         return null;
       }
       const next = mergeSessionEntry(existing, patch);
+      // Update activity tracking for idle detection
+      updateSessionActivity(next, "message");
       store[sessionKey] = next;
       return next;
     },

@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import type { Skill } from "@mariozechner/pi-coding-agent";
 import type { ChatType } from "../../channels/chat-type.js";
 import type { ChannelId } from "../../channels/plugins/types.js";
+import type { SessionActivity } from "../../session/activity.js";
 import type { DeliveryContext } from "../../utils/delivery-context.js";
 import type { TtsAutoMode } from "../types.tts.js";
 
@@ -32,6 +33,8 @@ export type SessionEntry = {
   lastHeartbeatSentAt?: number;
   sessionId: string;
   updatedAt: number;
+  /** Activity tracking for idle detection */
+  activity?: SessionActivity;
   sessionFile?: string;
   /** Parent session key that spawned this session (used for sandbox session-tool scoping). */
   spawnedBy?: string;

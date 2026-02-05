@@ -5,6 +5,7 @@ import { isCliProvider } from "../../agents/model-selection.js";
 import { deriveSessionTotalTokens, hasNonzeroUsage } from "../../agents/usage.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import { type SessionEntry, updateSessionStore } from "../../config/sessions.js";
+import { updateSessionActivity } from "../../session/activity.js";
 
 type RunResult = Awaited<
   ReturnType<(typeof import("../../agents/pi-embedded.js"))["runEmbeddedPiAgent"]>
@@ -56,6 +57,8 @@ export async function updateSessionStoreAfterAgentRun(params: {
     model: modelUsed,
     contextTokens,
   };
+  // Update activity tracking for idle detection
+  updateSessionActivity(next, "agent");
   if (isCliProvider(providerUsed, cfg)) {
     const cliSessionId = result.meta.agentMeta?.sessionId?.trim();
     if (cliSessionId) {
