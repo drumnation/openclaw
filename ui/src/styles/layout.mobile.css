@@ -94,6 +94,11 @@
     display: none;
   }
 
+  /* Hide model indicator on mobile */
+  .topbar-model {
+    display: none;
+  }
+
   /* Nav */
   .nav {
     padding: 8px 10px;

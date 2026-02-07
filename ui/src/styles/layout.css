@@ -190,6 +190,25 @@
   height: 12px;
 }
 
+/* Topbar model indicator */
+.topbar-model {
+  display: flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.topbar-model .mono {
+  font-family: var(--font-mono);
+}
+
 /* ===========================================
    Navigation Sidebar
    =========================================== */

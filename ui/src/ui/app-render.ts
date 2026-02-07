@@ -120,6 +120,42 @@ function uniquePreserveOrder(values: string[]): string[] {
   return output;
 }
 
+function resolveCurrentModel(state: AppViewState): string | null {
+  const config =
+    state.configForm ?? (state.configSnapshot?.config as Record<string, unknown> | null);
+  if (!config) return null;
+
+  // Try to get model from agents.list[0].model or agents.defaults.model
+  const agents = config.agents as { list?: unknown[]; defaults?: { model?: unknown } } | undefined;
+  if (!agents) return null;
+
+  // First check the first agent in the list
+  const list = agents.list;
+  if (Array.isArray(list) && list.length > 0) {
+    const firstAgent = list[0] as { model?: unknown } | undefined;
+    if (firstAgent?.model) {
+      const model = firstAgent.model;
+      if (typeof model === "string") return model;
+      if (typeof model === "object" && model) {
+        const record = model as { primary?: string };
+        if (record.primary) return record.primary;
+      }
+    }
+  }
+
+  // Fall back to defaults.model
+  const defaultModel = agents.defaults?.model;
+  if (defaultModel) {
+    if (typeof defaultModel === "string") return defaultModel;
+    if (typeof defaultModel === "object" && defaultModel) {
+      const record = defaultModel as { primary?: string };
+      if (record.primary) return record.primary;
+    }
+  }
+
+  return null;
+}
+
 function resolveAssistantAvatarUrl(state: AppViewState): string | undefined {
   const list = state.agentsList?.agents ?? [];
   const parsed = parseAgentSessionKey(state.sessionKey);
@@ -231,6 +267,12 @@ export function renderApp(state: AppViewState) {
             </div>
           </div>
         </div>
+        ${(() => {
+          const model = resolveCurrentModel(state);
+          return model
+            ? html`<div class="topbar-model"><span class="mono">${model}</span></div>`
+            : nothing;
+        })()}
         <div class="topbar-status">
           <div class="pill">
             <span class="statusDot ${state.connected ? "ok" : ""}"></span>
