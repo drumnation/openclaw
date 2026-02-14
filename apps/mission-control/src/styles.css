@@ -117,6 +117,67 @@ body {
   background: var(--border-color);
 }
 
+/* Quick Nav Bar */
+.quick-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background: var(--border-color);
+  color: var(--text-primary);
+  border-color: var(--accent-day);
+}
+
+.nav-icon {
+  font-size: 14px;
+}
+
+.nav-label {
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .quick-nav {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+  
+  .nav-link {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  .nav-label {
+    display: none;
+  }
+  
+  .nav-icon {
+    font-size: 16px;
+  }
+}
+
 /* Panels Grid */
 .panels {
   flex: 1;
@@ -256,21 +317,119 @@ body {
   }
 }
 
+/* Mobile: Tab bar + single panel view */
 @media (max-width: 900px) {
   .panels {
-    grid-template-columns: 1fr;
+    display: block;
+    position: relative;
+    padding: 0;
+    background: var(--bg-primary);
   }
+  
+  .panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+  }
+  
+  .panel.active {
+    display: flex;
+  }
+  
   .panel:nth-child(3) {
     grid-column: span 1;
   }
+  
   .header {
-    flex-direction: column;
-    gap: 12px;
-    padding: 12px 16px;
+    display: none; /* Redundant on mobile - tab bar has status dots */
   }
-  .header-right {
-    width: 100%;
-    justify-content: space-between;
+  
+  .quick-nav {
+    display: none; /* Too much vertical space on mobile */
+  }
+  
+  .panel-header {
+    display: none; /* Brother info is in the tab bar already */
+  }
+  
+  /* Bottom Tab Bar */
+  .mobile-tab-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: 8px 0;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 100;
+  }
+  
+  .mobile-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 4px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .mobile-tab.active {
+    color: var(--text-primary);
+  }
+  
+  .mobile-tab[data-instance="day"].active { color: var(--accent-day); }
+  .mobile-tab[data-instance="dusk"].active { color: var(--accent-dusk); }
+  .mobile-tab[data-instance="dawn"].active { color: var(--accent-dawn); }
+  
+  .mobile-tab .tab-icon {
+    font-size: 24px;
+  }
+  
+  .mobile-tab .tab-label {
+    font-size: 11px;
+    font-weight: 500;
+  }
+  
+  .mobile-tab .tab-status {
+    position: absolute;
+    top: 6px;
+    right: calc(50% - 20px);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--status-unknown);
+  }
+  
+  .mobile-tab[data-status="online"] .tab-status {
+    background: var(--status-online);
+    box-shadow: 0 0 6px var(--status-online);
+  }
+  
+  .mobile-tab[data-status="offline"] .tab-status {
+    background: var(--status-offline);
+  }
+  
+  /* Account for tab bar height */
+  #app {
+    padding-bottom: 70px;
+  }
+}
+
+/* Hide mobile tab bar on desktop */
+@media (min-width: 901px) {
+  .mobile-tab-bar {
+    display: none;
   }
 }
 
