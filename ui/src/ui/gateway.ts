@@ -53,6 +53,7 @@ export function resolveGatewayErrorDetailCode(
 export type GatewayHelloOk = {
   type: "hello-ok";
   protocol: number;
+  server?: { version?: string; host?: string };
   features?: { methods?: string[]; events?: string[] };
   snapshot?: unknown;
   auth?: {
