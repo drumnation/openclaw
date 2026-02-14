@@ -182,11 +182,12 @@ body {
 .panels {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 2px;
   background: var(--border-color);
   padding: 2px;
   min-height: 0;
+  overflow: hidden;
 }
 
 .panel {
@@ -313,8 +314,14 @@ body {
 .panel iframe {
   flex: 1;
   width: 100%;
+  max-width: 100%;
   border: none;
   background: var(--bg-primary);
+}
+
+.panel {
+  overflow: hidden;
+  min-width: 0;
 }
 
 /* Responsive */
