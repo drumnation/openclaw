@@ -338,11 +338,15 @@ export function handleControlUiHttpRequest(
       res.end();
       return true;
     }
+    const userConfig = (config as Record<string, unknown>)?.ui as Record<string, unknown> | undefined;
+    const userSection = userConfig?.user as Record<string, unknown> | undefined;
     sendJson(res, 200, {
       basePath,
       assistantName: identity.name,
       assistantAvatar: avatarValue ?? identity.avatar,
       assistantAgentId: identity.agentId,
+      userAvatar: typeof userSection?.avatar === "string" ? userSection.avatar : undefined,
+      userName: typeof userSection?.name === "string" ? userSection.name : undefined,
     } satisfies ControlUiBootstrapConfig);
     return true;
   }

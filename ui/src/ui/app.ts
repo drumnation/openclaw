@@ -83,6 +83,7 @@ import type {
 } from "./types.ts";
 import { type ChatAttachment, type ChatQueueItem, type CronFormState } from "./ui-types.ts";
 import { generateUUID } from "./uuid.ts";
+import { resolveInjectedUserIdentity } from "./user-identity.ts";
 import type { NostrProfileFormState } from "./views/channels.nostr-profile-form.ts";
 
 declare global {
@@ -92,6 +93,7 @@ declare global {
 }
 
 const bootAssistantIdentity = normalizeAssistantIdentity({});
+const injectedUserIdentity = resolveInjectedUserIdentity();
 
 function resolveOnboardingMode(): boolean {
   if (!window.location.search) {
@@ -134,6 +136,8 @@ export class OpenClawApp extends LitElement {
   @state() assistantName = bootAssistantIdentity.name;
   @state() assistantAvatar = bootAssistantIdentity.avatar;
   @state() assistantAgentId = bootAssistantIdentity.agentId ?? null;
+  @state() userName = injectedUserIdentity.name;
+  @state() userAvatar = injectedUserIdentity.avatar;
 
   @state() sessionKey = this.settings.sessionKey;
   @state() chatLoading = false;
