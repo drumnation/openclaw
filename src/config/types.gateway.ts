@@ -116,6 +116,10 @@ export type GatewayAuthConfig = {
   password?: string;
   /** Allow Tailscale identity headers when serve mode is enabled. */
   allowTailscale?: boolean;
+  /** Trust localhost connections without token auth. */
+  trustLocalhost?: boolean;
+  /** Additional allowed Host header values (DNS rebinding protection). */
+  allowedHosts?: string[];
   /** Rate-limit configuration for failed authentication attempts. */
   rateLimit?: GatewayAuthRateLimitConfig;
   /**
