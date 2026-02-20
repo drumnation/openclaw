@@ -160,6 +160,7 @@ export class OpenClawApp extends LitElement {
   @state() sidebarContent: string | null = null;
   @state() sidebarError: string | null = null;
   @state() splitRatio = this.settings.splitRatio;
+<<<<<<< HEAD
   // Markdown file sidebar state
   @state() sidebarMode: "tool" | "file" = "tool";
   @state() sidebarFilePath: string | null = null;
@@ -170,6 +171,8 @@ export class OpenClawApp extends LitElement {
   @state() sidebarFileDirty = false;
   // Context chips for files in context
   @state() fileContextChips: Array<{ path: string; filename: string }> = [];
+  // File viewer modal state
+  @state() fileViewerPath: string | null = null;
 
   @state() nodesLoading = false;
   @state() nodes: Array<Record<string, unknown>> = [];
@@ -403,8 +406,16 @@ export class OpenClawApp extends LitElement {
     return this;
   }
 
+  private _onViewFile = (e: Event) => {
+    const detail = (e as CustomEvent<{ path: string }>).detail;
+    if (detail?.path) {
+      this.fileViewerPath = detail.path;
+    }
+  };
+
   connectedCallback() {
     super.connectedCallback();
+    this.addEventListener("view-file", this._onViewFile);
     handleConnected(this as unknown as Parameters<typeof handleConnected>[0]);
   }
 
@@ -413,6 +424,7 @@ export class OpenClawApp extends LitElement {
   }
 
   disconnectedCallback() {
+    this.removeEventListener("view-file", this._onViewFile);
     handleDisconnected(this as unknown as Parameters<typeof handleDisconnected>[0]);
     super.disconnectedCallback();
   }

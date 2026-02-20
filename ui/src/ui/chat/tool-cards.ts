@@ -7,6 +7,19 @@ import { extractTextCached } from "./message-extract.ts";
 import { isToolResultMessage } from "./message-normalizer.ts";
 import { formatToolOutputForSidebar, getTruncatedPreview } from "./tool-helpers.ts";
 
+/** Tools that operate on file paths */
+const FILE_TOOLS = new Set(["read", "write", "edit", "Read", "Write", "Edit"]);
+
+/** Extract file path from tool card args */
+function extractFilePath(card: ToolCard): string | null {
+  if (!card.args || typeof card.args !== "object") {
+    return null;
+  }
+  const args = card.args as Record<string, unknown>;
+  const p = args.path ?? args.file_path ?? args.filePath;
+  return typeof p === "string" && p.trim() ? p.trim() : null;
+}
+
 export function extractToolCards(message: unknown): ToolCard[] {
   const m = message as Record<string, unknown>;
   const content = normalizeContent(m.content);
@@ -103,6 +116,26 @@ export function renderToolCardSidebar(card: ToolCard, onOpenSidebar?: (content: 
         ${isEmpty && !canClick ? html`<span class="chat-tool-card__status">${icons.check}</span>` : nothing}
       </div>
       ${detail ? html`<div class="chat-tool-card__detail">${detail}</div>` : nothing}
+      ${(() => {
+        const filePath = extractFilePath(card);
+        if (!filePath || !FILE_TOOLS.has(card.name)) {
+          return nothing;
+        }
+        return html`<button
+          class="chat-tool-card__view-file"
+          @click=${(e: Event) => {
+            e.stopPropagation();
+            e.target!.dispatchEvent(
+              new CustomEvent("view-file", {
+                detail: { path: filePath },
+                bubbles: true,
+                composed: true,
+              }),
+            );
+          }}
+          title="View file in modal"
+        >📄 View File</button>`;
+      })()}
       ${
         isEmpty
           ? html`

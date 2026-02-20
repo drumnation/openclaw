@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import "./components/file-viewer-modal.ts";
 import { parseAgentSessionKey } from "../../../src/routing/session-key.js";
 import { t } from "../i18n/index.ts";
 import { refreshChatAvatar } from "./app-chat.ts";
@@ -1195,5 +1196,16 @@ export function renderApp(state: AppViewState) {
       ${renderExecApprovalPrompt(state)}
       ${renderGatewayUrlConfirmation(state)}
     </div>
+    ${
+      state.fileViewerPath
+        ? html`<file-viewer-modal
+          .filePath=${state.fileViewerPath}
+          .basePath=${normalizeBasePath(state.basePath ?? "")}
+          @close=${() => {
+            state.fileViewerPath = null;
+          }}
+        ></file-viewer-modal>`
+        : nothing
+    }
   `;
 }
