@@ -141,8 +141,6 @@ export const SessionSchema = z
     idleWatcher: IdleWatcherConfigSchema.optional(),
     /** Configuration for time-based lifecycle hooks */
     timeWindow: TimeWindowConfigSchema.optional(),
-    /** Configuration for time window detection and lifecycle hooks */
-    timeWindow: TimeWindowConfigSchema.optional(),
   })
   .strict()
   .optional();

@@ -160,7 +160,6 @@ export class OpenClawApp extends LitElement {
   @state() sidebarContent: string | null = null;
   @state() sidebarError: string | null = null;
   @state() splitRatio = this.settings.splitRatio;
-<<<<<<< HEAD
   // Markdown file sidebar state
   @state() sidebarMode: "tool" | "file" = "tool";
   @state() sidebarFilePath: string | null = null;

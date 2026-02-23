@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Control</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👨‍👩‍👧</text></svg>">
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="header-left">
+        <h1>👨‍👩‍👧 Family Control</h1>
+        <span class="subtitle">The Family</span>
+      </div>
+      <div class="header-right">
+        <div class="status-indicators">
+          <div class="status-item" data-instance="jaclyn">
+            <span class="status-dot"></span>
+            <span class="status-label">Jaclyn</span>
+          </div>
+          <div class="status-item" data-instance="nicole">
+            <span class="status-dot"></span>
+            <span class="status-label">Nicole</span>
+          </div>
+          <div class="status-item" data-instance="sarah">
+            <span class="status-dot"></span>
+            <span class="status-label">Sarah</span>
+          </div>
+        </div>
+        <button class="refresh-btn" onclick="refreshAll()">↻ Refresh All</button>
+      </div>
+    </header>
+
+    <nav class="quick-nav">
+      <a href="https://console.singularity-labs.org" target="_blank" class="nav-link">
+        <span class="nav-icon">🎛️</span>
+        <span class="nav-label">Mission Control</span>
+      </a>
+      <a href="https://dusk.singularity-labs.org" target="_blank" class="nav-link">
+        <span class="nav-icon">🌆</span>
+        <span class="nav-label">Dusk Gateway</span>
+      </a>
+    </nav>
+
+    <main class="panels">
+      <section class="panel active" data-instance="jaclyn">
+        <div class="panel-header">
+          <span class="panel-icon">👩‍🍼</span>
+          <div class="panel-info">
+            <h2>Jaclyn</h2>
+            <span class="panel-host">Co-Parent AI · Beelink</span>
+          </div>
+          <div class="panel-actions">
+            <button onclick="openExternal('jaclyn')" title="Open in new tab">↗</button>
+            <button onclick="refreshPanel('jaclyn')" title="Refresh">↻</button>
+          </div>
+        </div>
+        <iframe
+          id="frame-jaclyn"
+          src="about:blank"
+          loading="lazy"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+        ></iframe>
+      </section>
+
+      <section class="panel" data-instance="nicole">
+        <div class="panel-header">
+          <span class="panel-icon">👩</span>
+          <div class="panel-info">
+            <h2>Nicole</h2>
+            <span class="panel-host">Co-Parent AI · Beelink</span>
+          </div>
+          <div class="panel-actions">
+            <button onclick="openExternal('nicole')" title="Open in new tab">↗</button>
+            <button onclick="refreshPanel('nicole')" title="Refresh">↻</button>
+          </div>
+        </div>
+        <iframe
+          id="frame-nicole"
+          src="about:blank"
+          loading="lazy"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+        ></iframe>
+      </section>
+
+      <section class="panel" data-instance="sarah">
+        <div class="panel-header">
+          <span class="panel-icon">👧</span>
+          <div class="panel-info">
+            <h2>Sarah</h2>
+            <span class="panel-host">Babysitter AI · Beelink</span>
+          </div>
+          <div class="panel-actions">
+            <button onclick="openExternal('sarah')" title="Open in new tab">↗</button>
+            <button onclick="refreshPanel('sarah')" title="Refresh">↻</button>
+          </div>
+        </div>
+        <iframe
+          id="frame-sarah"
+          src="about:blank"
+          loading="lazy"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+        ></iframe>
+      </section>
+    </main>
+
+    <nav class="mobile-tab-bar">
+      <button class="mobile-tab active" data-instance="jaclyn" onclick="switchTab('jaclyn')">
+        <span class="tab-status"></span>
+        <span class="tab-icon">👩‍🍼</span>
+        <span class="tab-label">Jaclyn</span>
+      </button>
+      <button class="mobile-tab" data-instance="nicole" onclick="switchTab('nicole')">
+        <span class="tab-status"></span>
+        <span class="tab-icon">👩</span>
+        <span class="tab-label">Nicole</span>
+      </button>
+      <button class="mobile-tab" data-instance="sarah" onclick="switchTab('sarah')">
+        <span class="tab-status"></span>
+        <span class="tab-icon">👧</span>
+        <span class="tab-label">Sarah</span>
+      </button>
+    </nav>
+  </div>
+
+  <script src="/src/main.js" type="module"></script>
+</body>
+</html>

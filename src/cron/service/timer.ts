@@ -374,6 +374,7 @@ export async function onTimer(state: CronServiceState) {
       }
     };
 
+    if (!dueJobs) return;
     const concurrency = Math.min(resolveRunConcurrency(state), Math.max(1, dueJobs.length));
     const results: (TimedCronRunOutcome | undefined)[] = Array.from({ length: dueJobs.length });
     let cursor = 0;

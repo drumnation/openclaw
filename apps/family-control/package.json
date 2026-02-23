@@ -1,0 +1,16 @@
+{
+  "name": "@openclaw/family-control",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Family AI Control Panel - Jaclyn, Nicole, Sarah",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview --port 18802 --host"
+  },
+  "devDependencies": {
+    "vite": "^6.4.1"
+  }
+}
