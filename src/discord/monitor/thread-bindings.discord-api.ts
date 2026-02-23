@@ -279,6 +279,32 @@ export async function createThreadForBinding(params: {
       },
     );
     const createdId = typeof created?.id === "string" ? created.id.trim() : "";
+    // Auto-add allowlisted users to the thread so they can follow sub-agent work
+    if (createdId) {
+      try {
+        const { rest } = createDiscordRestClient({
+          accountId: params.accountId,
+          token: params.token,
+        });
+        const { loadConfig } = await import("../../config/config.js");
+        const cfg = loadConfig();
+        const cfgRecord = cfg as Record<string, unknown>;
+        const channels = cfgRecord?.channels as Record<string, unknown> | undefined;
+        const discord = channels?.discord as Record<string, unknown> | undefined;
+        const guilds = discord?.guilds as Record<string, Record<string, unknown>> | undefined;
+        const guild = guilds ? Object.values(guilds)[0] : undefined;
+        const allowedUsers: string[] = (Array.isArray(guild?.users) ? guild.users : []) as string[];
+        for (const userId of allowedUsers) {
+          try {
+            await rest.put(Routes.threadMembers(createdId, userId));
+          } catch {
+            /* user may already be member or unavailable */
+          }
+        }
+      } catch (err: unknown) {
+        logVerbose(`discord thread binding auto-add members failed: ${String(err)}`);
+      }
+    }
     return createdId || null;
   } catch (err) {
     logVerbose(
